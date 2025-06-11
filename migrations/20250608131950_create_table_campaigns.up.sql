@@ -2,7 +2,7 @@ BEGIN;
 
 CREATE TABLE IF NOT EXISTS campaigns (
 	id BIGSERIAL PRIMARY KEY,
-	content_id BIGSERIAL NOT NULL,
+	content_id BIGINT NOT NULL,
 	target_amount NUMERIC(10, 2) NOT NULL,
 	current_amount NUMERIC(10, 2) DEFAULT 0 NOT NULL,
 	text TEXT NOT NULL,

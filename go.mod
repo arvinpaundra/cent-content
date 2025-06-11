@@ -3,7 +3,7 @@ module github.com/arvinpaundra/cent/content
 go 1.23.4
 
 require (
-	github.com/arvinpaundra/centpb v0.0.1
+	github.com/arvinpaundra/centpb v0.1.3
 	github.com/gin-gonic/gin v1.10.1
 	github.com/go-playground/validator/v10 v10.26.0
 	github.com/guregu/null/v6 v6.0.0

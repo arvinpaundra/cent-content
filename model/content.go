@@ -13,4 +13,6 @@ type Content struct {
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 	DeletedAt   null.Time
+
+	Campaign *Campaign
 }
