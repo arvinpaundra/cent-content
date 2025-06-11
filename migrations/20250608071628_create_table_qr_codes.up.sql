@@ -2,7 +2,7 @@ BEGIN;
 
 CREATE TABLE IF NOT EXISTS qr_codes (
 	id BIGSERIAL PRIMARY KEY,
-	content_id BIGSERIAL NOT NULL,
+	content_id BIGINT NOT NULL,
 	code VARCHAR(10) NOT NULL,
 	bg_color CHAR(7) NOT NULL,
 	qr_color CHAR(7) NOT NULL,

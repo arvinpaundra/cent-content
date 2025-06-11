@@ -2,6 +2,7 @@ package content
 
 import (
 	"context"
+	"errors"
 
 	"github.com/arvinpaundra/cent/content/domain/content/entity"
 	"github.com/arvinpaundra/cent/content/domain/content/repository"
@@ -21,15 +22,23 @@ func NewContentWriterRepository(db *gorm.DB) ContentWriterRepository {
 }
 
 func (r ContentWriterRepository) Save(ctx context.Context, content *entity.Content) error {
+	if content.IsNew() {
+		return r.insert(ctx, content)
+	}
+
+	return errors.New("unsupported database operation")
+}
+
+func (r ContentWriterRepository) insert(ctx context.Context, content *entity.Content) error {
 	contentModel := model.Content{
-		UserId: content.UserId,
+		UserId:      content.UserId,
 		RingtoneUrl: content.RingtoneUrl,
 	}
 
 	err := r.db.WithContext(ctx).
-	Model(&model.Content{}).
-	Create(&contentModel).
-	Error
+		Model(&model.Content{}).
+		Create(&contentModel).
+		Error
 
 	if err != nil {
 		return err
@@ -37,14 +46,15 @@ func (r ContentWriterRepository) Save(ctx context.Context, content *entity.Conte
 
 	content.ID = contentModel.ID
 
-	if !content.IsQrCodeEmpty() {
+	if !content.QrCode.IsEmpty() {
 		qrcode := content.QrCode
 
 		qrcodeModel := model.QrCode{
-			Code:    qrcode.Code,
-			BgColor: qrcode.BgColor,
-			QrColor: qrcode.QrColor,
-			Text:    null.StringFromPtr(qrcode.Text),
+			ContentId: contentModel.ID,
+			Code:      qrcode.Code,
+			BgColor:   qrcode.BgColor,
+			QrColor:   qrcode.QrColor,
+			Text:      null.StringFromPtr(qrcode.Text),
 		}
 
 		err := r.db.WithContext(ctx).
@@ -57,6 +67,9 @@ func (r ContentWriterRepository) Save(ctx context.Context, content *entity.Conte
 		}
 
 		qrcode.ID = qrcodeModel.ID
+	}
+
+	if !content.Campaign.IsEmpty() {
 	}
 
 	return nil

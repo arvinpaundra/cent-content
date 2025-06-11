@@ -42,12 +42,11 @@ var restCmd = &cobra.Command{
 			Handler: g,
 		}
 
-		userClientAddr := viper.GetString("USER_SERVICE_ADDR")
-
-		grpcClient, err := grpc.NewClientFactory(grpc.ClientConfig{UserClientAddr: userClientAddr})
-		if err != nil {
-			log.Fatalf("failed to dial grpc client: %s", err.Error())
-		}
+		grpcClient := grpc.NewClientFactory(
+			grpc.ClientConfig{
+				UserClientAddr: viper.GetString("USER_SERVICE_ADDR"),
+			},
+		)
 
 		go func() {
 			if err := srv.ListenAndServe(); err != http.ErrServerClosed {
@@ -72,6 +71,6 @@ var restCmd = &cobra.Command{
 }
 
 func init() {
-	restCmd.Flags().StringVarP(&restPort, "port", "p", "8090", "bind rest server to port")
+	restCmd.Flags().StringVarP(&restPort, "port", "p", "8070", "bind rest server to port")
 	rootCmd.AddCommand(restCmd)
 }

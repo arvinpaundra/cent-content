@@ -5,14 +5,19 @@ type Content struct {
 	UserId      int64
 	RingtoneUrl string
 	QrCode      *QrCode
+	Campaign    *Campaign
+}
+
+func (e *Content) IsNew() bool {
+	return e.ID <= 0
 }
 
 func (e *Content) SetQrCode(qrcode *QrCode) {
 	e.QrCode = qrcode
 }
 
-func (e *Content) IsQrCodeEmpty() bool {
-	return e.QrCode == nil
+func (e *Content) SetCampaign(campaign *Campaign) {
+	e.Campaign = campaign
 }
 
 type QrCode struct {
@@ -25,4 +30,21 @@ type QrCode struct {
 
 func (e *QrCode) IsNew() bool {
 	return e.ID <= 0
+}
+
+func (e *QrCode) IsEmpty() bool {
+	return e == nil
+}
+
+type Campaign struct {
+	ID            int64
+	ContentId     int64
+	TargetAmount  float64
+	CurrentAmount float64
+	Text          string
+	IsActive      bool
+}
+
+func (e *Campaign) IsEmpty() bool {
+	return e == nil
 }

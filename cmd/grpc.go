@@ -7,8 +7,10 @@ import (
 	"net"
 	"time"
 
+	grpcapp "github.com/arvinpaundra/cent/content/application/grpc"
 	"github.com/arvinpaundra/cent/content/config"
 	"github.com/arvinpaundra/cent/content/core"
+	"github.com/arvinpaundra/cent/content/core/validator"
 	"github.com/arvinpaundra/cent/content/database/sqlpkg"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
@@ -27,6 +29,12 @@ var grpcCmd = &cobra.Command{
 		sqlpkg.NewConnection(pgsql)
 
 		srv := grpc.NewServer()
+
+		grpcapp.Register(
+			srv,
+			sqlpkg.GetConnection(),
+			validator.NewValidator(),
+		)
 
 		go func() {
 			addr := fmt.Sprintf(":%s", grpcPort)
@@ -58,6 +66,6 @@ var grpcCmd = &cobra.Command{
 }
 
 func init() {
-	grpcCmd.Flags().StringVarP(&grpcPort, "port", "p", "8093", "bind grpc to port")
+	grpcCmd.Flags().StringVarP(&grpcPort, "port", "p", "8073", "bind grpc to port")
 	rootCmd.AddCommand(grpcCmd)
 }

@@ -1,6 +1,8 @@
 package grpc
 
 import (
+	"log"
+
 	"github.com/arvinpaundra/centpb/gen/go/auth/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -15,24 +17,24 @@ type ClientConfig struct {
 }
 
 type Client struct {
-	UserClient usersvc
+	userClient usersvc
 
 	conns []*grpc.ClientConn
 }
 
-func NewClientFactory(config ClientConfig) (*Client, error) {
+func NewClientFactory(config ClientConfig) *Client {
 	client := new(Client)
 
 	userConn, err := client.dial(config.UserClientAddr)
 	if err != nil {
-		return nil, err
+		log.Fatalf("failed to dial to client: %v\n", err.Error())
 	}
 
-	client.UserClient = usersvc{
+	client.userClient = usersvc{
 		AuthenticateServiceClient: auth.NewAuthenticateServiceClient(userConn),
 	}
 
-	return client, nil
+	return client
 }
 
 func (c *Client) Close() error {
@@ -44,6 +46,10 @@ func (c *Client) Close() error {
 	}
 
 	return nil
+}
+
+func (c *Client) UserClient() usersvc {
+	return c.userClient
 }
 
 func (c *Client) appendConn(conn *grpc.ClientConn) {
