@@ -22,11 +22,11 @@ func NewContentService(db *gorm.DB) ContentService {
 func (c ContentService) FindActiveContent(ctx context.Context, req *content.FindActiveContentRequest) (*content.FindActiveContentResponse, error) {
 	userId := req.GetUserId()
 
-	handler := service.NewFindActiveContentHandler(
+	svc := service.NewFindActiveContent(
 		contentinfra.NewContentReaderRepository(c.db),
 	)
 
-	result, err := handler.Handle(ctx, userId)
+	result, err := svc.Exec(ctx, userId)
 	if err != nil {
 		return nil, err
 	}

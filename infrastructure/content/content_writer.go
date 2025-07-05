@@ -2,7 +2,6 @@ package content
 
 import (
 	"context"
-	"errors"
 
 	"github.com/arvinpaundra/cent/content/domain/content/entity"
 	"github.com/arvinpaundra/cent/content/domain/content/repository"
@@ -26,7 +25,7 @@ func (r ContentWriterRepository) Save(ctx context.Context, content *entity.Conte
 		return r.insert(ctx, content)
 	}
 
-	return errors.New("unsupported database operation")
+	return nil
 }
 
 func (r ContentWriterRepository) insert(ctx context.Context, content *entity.Content) error {
@@ -67,6 +66,28 @@ func (r ContentWriterRepository) insert(ctx context.Context, content *entity.Con
 		}
 
 		qrcode.ID = qrcodeModel.ID
+	}
+
+	if !content.Message.IsEmpty() {
+		message := content.Message
+
+		messageModel := model.Message{
+			ContentId:   contentModel.ID,
+			BgColor:     message.BgColor,
+			TextColor:   message.TextColor,
+			IsTtsActive: message.IsTTSActive,
+		}
+
+		err := r.db.WithContext(ctx).
+			Model(&model.Message{}).
+			Create(&messageModel).
+			Error
+
+		if err != nil {
+			return err
+		}
+
+		message.ID = messageModel.ID
 	}
 
 	if !content.Campaign.IsEmpty() {

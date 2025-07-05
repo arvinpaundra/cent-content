@@ -41,6 +41,10 @@ var consumerCmd = &cobra.Command{
 		}()
 
 		wait := core.GracefulShutdown(context.Background(), 30*time.Second, map[string]func(ctx context.Context) error{
+			"consumer": func(_ context.Context) error {
+				conn := nc.GetConnection()
+				return conn.Drain()
+			},
 			"postgres": func(_ context.Context) error {
 				return pgsql.Close()
 			},

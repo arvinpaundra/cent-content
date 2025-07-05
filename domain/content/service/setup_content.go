@@ -8,22 +8,22 @@ import (
 	"github.com/arvinpaundra/cent/content/domain/content/repository"
 )
 
-type SetupContentHandler struct {
+type SetupContent struct {
 	contentWriter repository.ContentWriter
 	unitOfWork    repository.UnitOfWork
 }
 
-func NewSetupContentHandler(
+func NewSetupContent(
 	contentWriter repository.ContentWriter,
 	unitOfWork repository.UnitOfWork,
-) SetupContentHandler {
-	return SetupContentHandler{
+) SetupContent {
+	return SetupContent{
 		contentWriter: contentWriter,
 		unitOfWork:    unitOfWork,
 	}
 }
 
-func (s SetupContentHandler) Handle(ctx context.Context, command content.CreateSetupContent) error {
+func (s SetupContent) Exec(ctx context.Context, command content.CreateSetupContent) error {
 	tx, err := s.unitOfWork.Begin()
 	if err != nil {
 		return err
@@ -42,6 +42,14 @@ func (s SetupContentHandler) Handle(ctx context.Context, command content.CreateS
 	}
 
 	content.SetQrCode(&qrcode)
+
+	message := entity.Message{
+		TextColor:   "",
+		BgColor:     "",
+		IsTTSActive: false,
+	}
+
+	content.SetMessage(&message)
 
 	err = tx.ContentWriter().Save(ctx, &content)
 	if err != nil {

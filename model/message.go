@@ -6,14 +6,13 @@ import (
 	"github.com/guregu/null/v6"
 )
 
-type Content struct {
+type Message struct {
 	ID          int64
-	UserId      int64
-	RingtoneUrl string
+	ContentId   int64
+	BgColor     string
+	TextColor   string
+	IsTtsActive bool
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 	DeletedAt   null.Time
-
-	Message  *Message
-	Campaign *Campaign
 }

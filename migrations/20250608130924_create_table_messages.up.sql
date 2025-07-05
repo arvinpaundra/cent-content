@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS messages (
 	content_id BIGINT NOT NULL,
 	bg_color CHAR(7) NOT NULL,
 	text_color CHAR(7) NOT NULL,
+	is_tts_active BOOLEAN DEFAULT false NOT NULL,
 	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	deleted_at TIMESTAMP,

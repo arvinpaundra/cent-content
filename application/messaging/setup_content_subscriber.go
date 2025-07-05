@@ -72,38 +72,38 @@ func (m SetupContentSubscriber) Subscribe(ctx context.Context) error {
 		}
 	}
 
-	for {
-		consumerContex, err := consumer.Consume(func(msg jetstream.Msg) {
-			msg.Ack()
+	consumerContex, err := consumer.Consume(func(msg jetstream.Msg) {
+		msg.Ack()
 
-			m.logger.Info("event received", zap.String("event", msg.Subject()), zap.ByteString("data", msg.Data()))
+		m.logger.Info("event received", zap.String("event", msg.Subject()), zap.ByteString("data", msg.Data()))
 
-			var command contentcmd.CreateSetupContent
+		var command contentcmd.CreateSetupContent
 
-			err := json.Unmarshal(msg.Data(), &command)
-			if err != nil {
-				m.logger.Error(err.Error(), zap.ByteString("data", msg.Data()))
-				return
-			}
-
-			handler := service.NewSetupContentHandler(
-				contentinfra.NewContentWriterRepository(m.db),
-				contentinfra.NewUnitOfWork(m.db),
-			)
-
-			err = handler.Handle(ctx, command)
-			if err != nil {
-				m.logger.Error(err.Error())
-				return
-			}
-		})
-
+		err := json.Unmarshal(msg.Data(), &command)
 		if err != nil {
-			return err
+			m.logger.Error(err.Error(), zap.ByteString("data", msg.Data()))
+			return
 		}
 
-		<-consumerContex.Closed()
+		svc := service.NewSetupContent(
+			contentinfra.NewContentWriterRepository(m.db),
+			contentinfra.NewUnitOfWork(m.db),
+		)
 
-		m.logger.Info("consumer closed")
+		err = svc.Exec(ctx, command)
+		if err != nil {
+			m.logger.Error(err.Error())
+			return
+		}
+	})
+
+	if err != nil {
+		return err
 	}
+
+	<-consumerContex.Closed()
+
+	m.logger.Info("consumer closed")
+
+	return nil
 }
