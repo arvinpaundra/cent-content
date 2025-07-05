@@ -7,10 +7,13 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/arvinpaundra/cent/content/api/route"
+	restrouter "github.com/arvinpaundra/cent/content/application/rest/router"
+	sserouter "github.com/arvinpaundra/cent/content/application/sse/router"
+	"github.com/arvinpaundra/cent/content/application/sse/subscriber"
 	"github.com/arvinpaundra/cent/content/config"
 	"github.com/arvinpaundra/cent/content/core"
-	"github.com/arvinpaundra/cent/content/core/grpc"
+	"github.com/arvinpaundra/cent/content/core/logger"
+	"github.com/arvinpaundra/cent/content/core/messaging"
 	"github.com/arvinpaundra/cent/content/core/validator"
 	"github.com/arvinpaundra/cent/content/database/sqlpkg"
 	"github.com/gin-gonic/gin"
@@ -30,23 +33,21 @@ var restCmd = &cobra.Command{
 
 		sqlpkg.NewConnection(pgsql)
 
+		nc := messaging.NewNats(viper.GetString("NATS_URL"))
+
 		g := gin.New()
 
-		_ = route.NewRoutes(g, sqlpkg.GetConnection(), validator.NewValidator()).
-			WithPublic().
-			WithPrivate().
-			WithInternal()
+		restrouter.Register(g, sqlpkg.GetConnection(), validator.NewValidator())
+
+		subs := subscriber.NewDonationPaid(sqlpkg.GetConnection(), nc.GetConnection(), logger.NewLogger(viper.GetString("APP_MODE")))
+		go subs.Subscribe(context.Background())
+
+		sserouter.Register(g, sqlpkg.GetConnection(), nc.GetConnection(), logger.NewLogger(viper.GetString("APP_MODE")))
 
 		srv := http.Server{
 			Addr:    fmt.Sprintf(":%s", restPort),
 			Handler: g,
 		}
-
-		grpcClient := grpc.NewClientFactory(
-			grpc.ClientConfig{
-				UserClientAddr: viper.GetString("USER_SERVICE_ADDR"),
-			},
-		)
 
 		go func() {
 			if err := srv.ListenAndServe(); err != http.ErrServerClosed {
@@ -61,8 +62,8 @@ var restCmd = &cobra.Command{
 			"postgres": func(_ context.Context) error {
 				return pgsql.Close()
 			},
-			"grpc-client": func(_ context.Context) error {
-				return grpcClient.Close()
+			"nats": func(_ context.Context) error {
+				return nc.Close()
 			},
 		})
 

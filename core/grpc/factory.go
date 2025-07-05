@@ -4,12 +4,14 @@ import (
 	"log"
 
 	"github.com/arvinpaundra/centpb/gen/go/auth/v1"
+	"github.com/arvinpaundra/centpb/gen/go/user/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
 type usersvc struct {
 	auth.AuthenticateServiceClient
+	user.UserServiceClient
 }
 
 type ClientConfig struct {

@@ -22,6 +22,7 @@ func (r ContentReaderRepository) FindActiveContentByUserId(ctx context.Context, 
 	err := r.db.WithContext(ctx).
 		Model(&model.Content{}).
 		Preload("Campaign", "is_active = true").
+		Preload("Message").
 		Where("user_id = ? AND deleted_at IS NULL", userId).
 		First(&contentModel).
 		Error
@@ -36,17 +37,33 @@ func (r ContentReaderRepository) FindActiveContentByUserId(ctx context.Context, 
 		RingtoneUrl: contentModel.RingtoneUrl,
 	}
 
-	if content.Campaign != nil {
+	if contentModel.Campaign != nil {
+		campaignModel := contentModel.Campaign
+
 		campaign := &entity.Campaign{
-			ID:            content.Campaign.ID,
-			ContentId:     content.Campaign.ContentId,
-			TargetAmount:  content.Campaign.TargetAmount,
-			CurrentAmount: content.Campaign.CurrentAmount,
-			Text:          content.Campaign.Text,
-			IsActive:      content.Campaign.IsActive,
+			ID:            campaignModel.ID,
+			ContentId:     campaignModel.ContentId,
+			TargetAmount:  campaignModel.TargetAmount,
+			CurrentAmount: campaignModel.CurrentAmount,
+			Text:          campaignModel.Text,
+			IsActive:      campaignModel.IsActive,
 		}
 
 		content.SetCampaign(campaign)
+	}
+
+	if contentModel.Message != nil {
+		messageModel := contentModel.Message
+
+		message := &entity.Message{
+			ID:          messageModel.ID,
+			ContentId:   messageModel.ContentId,
+			BgColor:     messageModel.BgColor,
+			TextColor:   messageModel.TextColor,
+			IsTTSActive: messageModel.IsTtsActive,
+		}
+
+		content.SetMessage(message)
 	}
 
 	return &content, nil

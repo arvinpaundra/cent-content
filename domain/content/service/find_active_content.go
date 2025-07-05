@@ -7,17 +7,17 @@ import (
 	"github.com/arvinpaundra/cent/content/domain/content/repository"
 )
 
-type FindActiveContentHandler struct {
+type FindActiveContent struct {
 	contentReader repository.ContentReader
 }
 
-func NewFindActiveContentHandler(contentReader repository.ContentReader) FindActiveContentHandler {
-	return FindActiveContentHandler{
+func NewFindActiveContent(contentReader repository.ContentReader) FindActiveContent {
+	return FindActiveContent{
 		contentReader: contentReader,
 	}
 }
 
-func (s FindActiveContentHandler) Handle(ctx context.Context, userId int64) (contentres.FindActiveContent, error) {
+func (s FindActiveContent) Exec(ctx context.Context, userId int64) (contentres.FindActiveContent, error) {
 	content, err := s.contentReader.FindActiveContentByUserId(ctx, userId)
 	if err != nil {
 		return contentres.FindActiveContent{}, err
